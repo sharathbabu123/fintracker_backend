@@ -60,6 +60,42 @@ app.post("/income", async (req, res) => {
   }
 });
 
+// Fetch expenses for a user
+app.get("/expenses", async (req, res) => {
+    const { userId } = req.query;
+    try {
+      const expenses = await pool.query("SELECT * FROM expenses WHERE user_id = $1", [userId]);
+      res.json(expenses.rows);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  
+  // Add an expense
+  app.post("/expenses", async (req, res) => {
+    const { userId, amount, category } = req.body;
+    try {
+      const newExpense = await pool.query(
+        "INSERT INTO expenses (user_id, amount, category) VALUES ($1, $2, $3) RETURNING *",
+        [userId, amount, category]
+      );
+      res.json(newExpense.rows[0]);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  
+  // Fetch user income
+  app.get("/income", async (req, res) => {
+    const { userId } = req.query;
+    try {
+      const income = await pool.query("SELECT * FROM income WHERE user_id = $1", [userId]);
+      res.json(income.rows);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
 // Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
