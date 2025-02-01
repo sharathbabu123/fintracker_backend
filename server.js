@@ -7,7 +7,21 @@ const { Pool } = require("pg");
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+// CORS configuration
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:3000', 'https://fintracker.vercel.app'],
+    credentials: true
+}));
+
+  
+// Force HTTPS
+app.use((req, res, next) => {
+if (req.headers['x-forwarded-proto'] !== 'https' && process.env.NODE_ENV === 'production') {
+    return res.redirect(`https://${req.headers.host}${req.url}`);
+}
+next();
+});
 
 // PostgreSQL Connection
 const pool = new Pool({
