@@ -31,6 +31,19 @@ app.use((req, res, next) => {
   next();
 });
 
+// Enable SSL in production
+const poolConfig = {
+    connectionString: process.env.DATABASE_URL,
+  };
+  
+// For Postgres on Render, you often need:
+// ssl: { rejectUnauthorized: false }
+if (process.env.NODE_ENV === "production") {
+poolConfig.ssl = { rejectUnauthorized: false };
+}
+
+
+
 // PostgreSQL Connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
