@@ -31,29 +31,27 @@ app.use((req, res, next) => {
   next();
 });
 
-// Enable SSL in production
+// Create poolConfig and conditionally enable SSL
 const poolConfig = {
-    connectionString: process.env.DATABASE_URL,
-  };
-  
-// For Postgres on Render, you often need:
-// ssl: { rejectUnauthorized: false }
+  connectionString: process.env.DATABASE_URL,
+};
+
 if (process.env.NODE_ENV === "production") {
-poolConfig.ssl = { rejectUnauthorized: false };
+  // For Render/Postgres, you typically need SSL with rejectUnauthorized: false
+  poolConfig.ssl = { rejectUnauthorized: false };
+  console.log("[DB] Production mode detected, enabling SSL...");
+} else {
+  console.log("[DB] Not in production mode, SSL not enabled.");
 }
 
-
-
-// PostgreSQL Connection
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+// PostgreSQL Connection using poolConfig
+const pool = new Pool(poolConfig);
 
 // User Registration
 app.post("/register", async (req, res) => {
   console.log("[REGISTER] Request body:", req.body);
   const { username, password, email } = req.body;
-  
+
   try {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -88,12 +86,14 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
   console.log("[LOGIN] Request body:", req.body);
   const { username, password } = req.body;
-  
+
   try {
-    // Find user by username
-    const userQuery = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+    const userQuery = await pool.query(
+      "SELECT * FROM users WHERE username = $1",
+      [username]
+    );
     console.log("[LOGIN] DB query result:", userQuery.rows);
-    
+
     if (!userQuery.rows.length) {
       console.log("[LOGIN] User not found:", username);
       return res.status(400).json({ error: "User not found" });
