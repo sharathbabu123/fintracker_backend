@@ -126,11 +126,11 @@ app.post("/login", async (req, res) => {
 // Add Income
 app.post("/income", async (req, res) => {
   console.log("[INCOME:POST] Request body:", req.body);
-  const { userId, amount, source } = req.body;
+  const { userId, amount, source, date, transactionType } = req.body;
   try {
     const newIncome = await pool.query(
-      "INSERT INTO income (user_id, amount, source) VALUES ($1, $2, $3) RETURNING *",
-      [userId, amount, source]
+      "INSERT INTO income (user_id, amount, source, date, transaction_type) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [userId, amount, source, date, transactionType]
     );
     console.log("[INCOME:POST] Inserted income:", newIncome.rows[0]);
     res.json(newIncome.rows[0]);
@@ -160,11 +160,11 @@ app.get("/expenses", async (req, res) => {
 // Add an expense
 app.post("/expenses", async (req, res) => {
   console.log("[EXPENSES:POST] Request body:", req.body);
-  const { userId, amount, category } = req.body;
+  const { userId, amount, category, date, transactionType } = req.body;
   try {
     const newExpense = await pool.query(
-      "INSERT INTO expenses (user_id, amount, category) VALUES ($1, $2, $3) RETURNING *",
-      [userId, amount, category]
+      "INSERT INTO expenses (user_id, amount, category, date, transaction_type) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [userId, amount, category, date, transactionType]
     );
     console.log("[EXPENSES:POST] Inserted expense:", newExpense.rows[0]);
     res.json(newExpense.rows[0]);
